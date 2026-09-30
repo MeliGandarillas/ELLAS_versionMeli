@@ -11,6 +11,9 @@ import useDije from './hooks/useDije.js';
 import { leerUsuario, guardarUsuario, borrarUsuario } from './api/sesion.js';
 import { cambiarCompartir, mensajeDeError, alVencerLaSesion } from './api/cliente.js';
 
+// Cuánto tiempo se muestra en rojo a la amiga que envió una alerta
+const DURACION_ALERTA_MS = 30000;
+
 export default function App() {
   // Usuaria actual (se guarda en el navegador)
   const [usuario, setUsuario] = useState(leerUsuario);
@@ -26,6 +29,13 @@ export default function App() {
   const [aviso, setAviso] = useState(null);
   // Última alerta de una amiga que te tiene como contacto de emergencia: { usuarioId, nombre, lat, lng }
   const [alerta, setAlerta] = useState(null);
+
+  // A los 30 s la amiga deja de verse en rojo (una alerta nueva reinicia la cuenta)
+  useEffect(() => {
+    if (!alerta) return;
+    const temporizador = setTimeout(() => setAlerta(null), DURACION_ALERTA_MS);
+    return () => clearTimeout(temporizador);
+  }, [alerta]);
   const dije = useDije(setAviso);
 
   // Una amiga presionó el botón de su dije: se avisa y se muestra dónde está en el mapa
