@@ -1,0 +1,7 @@
+{
+    // Límites de memoria para las extensiones de Java y Spring Boot de VS Code
+    // (por defecto el servidor de Java puede usar hasta 2 GB)
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx1G -Xms100m -Xlog:disable",
+    "spring-boot.ls.java.heap": "384m",
+    "java.configuration.updateBuildConfiguration": "interactive"
+}

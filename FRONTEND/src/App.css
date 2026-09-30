@@ -1,0 +1,600 @@
+/* Variables de Color */
+:root {
+  --bg-dark: #3A3A3A;
+  --purple-main: #8a3a62;
+  --purple-dark: #58213e;
+  --pink-accent: #c8a3b5;
+  --pink-light: #d6b8c7;
+  --text-white: #ffffff;
+
+  /* Variables que usan las páginas del equipo (Centros de Apoyo, Salud, Fertilidad) */
+  --plum-dark: #7d355b;
+  --pale-pink: #f3dde7;
+  --bg-white: #ffffff;
+  --border-radius-md: 14px;
+  --border-radius-lg: 20px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1a1a1a;
+  font-family: serif;
+  color: var(--text-white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Contenedor donde React monta la app: ocupa todo el ancho para centrar el teléfono */
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Layout de la app.
+   En celulares ocupa toda la pantalla; en tablets y computadoras se muestra
+   como un teléfono centrado que se ajusta a la altura de la ventana. */
+.mobile-container {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh; /* descuenta las barras del navegador en celulares */
+  background-color: var(--bg-dark);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  /* Respeta el notch y la barra de gestos del teléfono */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 600px) and (min-height: 640px) {
+  .mobile-container {
+    width: 400px;
+    height: min(860px, calc(100dvh - 48px));
+    border: 12px solid #2a2a2a;
+    border-radius: 36px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Vista principal: si la pantalla es muy baja (celular acostado) se puede desplazar */
+.inicio {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* En pantallas anchas (celular acostado) el contenido no se estira: queda centrado */
+.inicio,
+.page {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 600px;
+  align-self: center;
+}
+
+.friends-panel,
+.page-panel {
+  box-sizing: border-box;
+  width: calc(100% - 30px);
+  max-width: 570px;
+  align-self: center;
+}
+
+/* Header Superior */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 20px 10px 20px;
+}
+
+/* Logo "Ellas": la imagen tiene espacio transparente alrededor,
+   se agranda y se desplaza para mostrar solo las letras (396 x 155 px) */
+.header-logo {
+  position: relative;
+  width: 110px;
+  height: 43px;
+  overflow: hidden;
+}
+
+.header-logo img {
+  position: absolute;
+  width: 168.2%;
+  left: -5.3%;
+  top: -89%;
+  max-width: none;
+}
+
+.header-date {
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+/* Contenedor de Tarjetas Superiores */
+.cards-container {
+  background-color: var(--purple-main);
+  border: 3px solid var(--purple-dark);
+  border-radius: 18px;
+  margin: 0 15px;
+  padding: 15px 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(8px, 3vw, 16px);
+  justify-items: center;
+  flex-shrink: 0;
+}
+
+.card-box {
+  width: 100%;
+  max-width: 72px;
+  aspect-ratio: 1;
+  background-color: var(--pink-accent);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card-box:hover {
+  transform: scale(1.1);
+}
+
+.card-icon {
+  width: 55%;
+  height: 55%;
+  color: var(--purple-dark);
+}
+
+/* Área del Mapa: ocupa todo el espacio que sobra en la pantalla */
+.inicio-mapa {
+  margin: 20px 15px;
+  flex: 1 1 auto;
+  min-height: 200px;
+  background-color: #e5e3df;
+  border: 4px solid var(--purple-dark);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Panel Inferior con Botones */
+.bottom-panel {
+  flex: 0 0 170px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 20px 25px 30px 25px;
+  position: relative;
+}
+
+/* Botón de Corazón (debajo del mapa) */
+.heart-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.heart-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  /* Mismas proporciones que el dibujo dentro de la imagen (212 x 252 px) */
+  width: 106px;
+  height: 126px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.heart-btn:hover,
+.heart-btn:focus-visible {
+  transform: scale(1.1);
+}
+
+/* La imagen "boton de flor" tiene mucho espacio transparente alrededor:
+   se agranda y se desplaza para que el botón muestre solo el corazón con el pin */
+.heart-icon {
+  position: absolute;
+  width: 210.8%;
+  left: -49.5%;
+  top: -42.9%;
+  max-width: none;
+}
+
+/* Texto que aparece al pasar el mouse */
+.heart-tooltip {
+  margin-top: 6px;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--pink-light);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+}
+
+.heart-btn:hover + .heart-tooltip,
+.heart-btn:focus-visible + .heart-tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Vista Amigos */
+.friends-panel,
+.page-panel {
+  flex: 1;
+  margin: 15px;
+  background-color: var(--purple-main);
+  border: 4px solid var(--purple-dark);
+  border-radius: 18px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.friends-title,
+.page-title {
+  text-align: center;
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.search-bar {
+  background-color: var(--pink-light);
+  height: 30px;
+  border-radius: 15px;
+}
+
+.friend-item {
+  background-color: var(--pink-accent);
+  min-height: 45px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 15px;
+  flex-shrink: 0;
+}
+
+/* Contactos de emergencia (amigas favoritas) */
+.friend-item.favorita {
+  background-color: var(--pink-light);
+  box-shadow: inset 0 0 0 2px var(--purple-main);
+}
+
+.friend-info {
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-tag {
+  font-size: 11px;
+  color: var(--purple-main);
+}
+
+.friend-fav {
+  background: none;
+  border: none;
+  padding: 0 2px;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--purple-main);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.friend-fav:not(.activa) {
+  opacity: 0.6;
+}
+
+.friend-fav:hover {
+  transform: scale(1.15);
+}
+
+/* Modal */
+.app-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.app-modal {
+  width: min(85%, 300px);
+  min-height: 220px;
+  background-color: #ffffff;
+  border: 10px solid var(--purple-dark);
+  outline: 4px solid var(--pink-light);
+  border-radius: 20px;
+  box-sizing: border-box;
+  padding: 15px;
+  position: relative;
+}
+
+.app-modal-cerrar {
+  position: absolute;
+  top: 5px;
+  right: 8px;
+  background: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+/* Botón para regresar a la vista principal */
+.back-btn {
+  margin-top: auto;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 12px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+/* ---------- Conexión con el backend ---------- */
+
+/* Mapa (Leaflet) */
+.mapa {
+  position: absolute;
+  inset: 0;
+}
+
+/* Leaflet usa z-index altos; así no se dibuja encima del modal */
+.inicio-mapa {
+  z-index: 0;
+}
+
+/* Barra de búsqueda de amigas por correo */
+.search-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 4px 0 12px;
+}
+
+.search-bar input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  color: var(--purple-dark);
+}
+
+.search-bar button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--purple-main);
+  color: #fff;
+  cursor: pointer;
+}
+
+.friends-subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--pink-light);
+}
+
+.friends-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pink-light);
+}
+
+.friend-item {
+  gap: 8px;
+  padding-left: 15px;
+}
+
+.friend-name {
+  margin-right: auto;
+  color: var(--purple-dark);
+  font-weight: bold;
+}
+
+.friend-action {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--purple-main);
+  color: #fff;
+  cursor: pointer;
+}
+
+.aviso {
+  margin: 0;
+  font-size: 13px;
+}
+
+.aviso-ok {
+  color: var(--pink-light);
+}
+
+.aviso-error,
+.form-error {
+  color: #ffd1dc;
+}
+
+/* Formularios (registro) */
+.registro-logo {
+  align-self: center;
+  margin-bottom: 10px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* "¿Todavía no tienes cuenta? [Crear cuenta]" al pie de la pantalla de entrada */
+.form-secundario {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--pink-light);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--pink-light);
+  color: var(--purple-dark);
+  font-family: inherit;
+}
+
+.form-error {
+  margin: 0;
+  font-size: 13px;
+}
+
+.primary-btn,
+.small-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--pink-accent);
+  color: var(--purple-dark);
+  font-family: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.primary-btn.activo {
+  background-color: var(--purple-main);
+  color: #fff;
+}
+
+/* Contenido del modal */
+.app-modal-body {
+  min-height: 170px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  color: var(--purple-dark);
+}
+
+.modal-title {
+  margin: 0;
+  font-weight: bold;
+}
+
+.modal-estado {
+  margin: 0;
+  font-size: 12px;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--purple-main);
+  text-decoration: underline;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Base de las páginas del equipo (.page) ---------- */
+
+.page {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px 24px;
+  color: var(--text-white);
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+/* Quita los márgenes por defecto del navegador; cada página pone los suyos */
+.page :where(h2, h3, h4, p, ul) {
+  margin: 0;
+}
+
+.page h2 {
+  margin: 14px 0 4px;
+  font-size: 22px;
+}
+
+.page .subtitle {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--pink-light);
+}
+
+.page .back-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--pink-light);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.page .list-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.page button,
+.page input,
+.page select {
+  font-family: inherit;
+}
+
+.fade-in {
+  animation: aparecer 0.25s ease-out;
+}
+
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}

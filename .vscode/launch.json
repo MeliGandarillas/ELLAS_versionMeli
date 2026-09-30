@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-EllasApplication<ELLAS>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/BACKEND/ELLAS",
+            "mainClass": "com.ELLAS.ELLAS.EllasApplication",
+            "projectName": "ELLAS",
+            "args": "",
+            "vmArgs": "-Xmx384m -XX:+UseSerialGC",
+            "envFile": "${workspaceFolder}/BACKEND/ELLAS/.env"
+        }
+    ]
+}

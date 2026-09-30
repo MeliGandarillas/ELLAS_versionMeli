@@ -141,3 +141,42 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# ==================================================
+# ELLAS: reglas agregadas para este proyecto
+# ==================================================
+
+# --- Datos sensibles: NUNCA se suben ---
+# (contraseñas de la base de datos, clave del JWT, etc. Plantilla sin datos: .env.example)
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.keystore
+*.jks
+
+# --- Backend (Java / Maven / Spring Boot) ---
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+*.class
+HELP.md
+
+# --- Frontend (Vite / React) ---
+**/node_modules/
+**/dist/
+*.local
+
+# --- Android / Capacitor (para cuando se genere el APK) ---
+**/android/app/build/
+**/android/.gradle/
+**/android/local.properties
+**/android/app/release/
+*.apk
+*.aab
+
+# --- Editores y sistema operativo ---
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
