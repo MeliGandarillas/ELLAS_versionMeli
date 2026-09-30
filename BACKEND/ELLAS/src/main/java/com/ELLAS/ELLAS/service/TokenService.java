@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.Instant;
 
-/** Crea el token de sesión que la app manda en cada petición (header Authorization: Bearer ...). */
+
 @Service
 @RequiredArgsConstructor
 public class TokenService {

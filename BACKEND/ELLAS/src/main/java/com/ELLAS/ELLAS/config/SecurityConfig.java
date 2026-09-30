@@ -22,10 +22,6 @@ public class SecurityConfig {
     @Value("${app.cors.origenes}")
     private List<String> origenes;
 
-    /**
-     * Solo registrarse e iniciar sesión son públicos. Todo lo demás exige el JWT
-     * (header Authorization: Bearer ...) y la usuaria se toma del token, no de lo que mande el cliente.
-     */
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())

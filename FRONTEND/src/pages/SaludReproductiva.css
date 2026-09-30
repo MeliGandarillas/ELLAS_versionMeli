@@ -1,6 +1,4 @@
-/* =========================================
-   FORMULARIO DE FERTILIDAD (PÁGINA COMPLETA)
-   ========================================= */
+
 .pagina-salud-reproductiva .fertility-form-page {
   background-color: var(--pale-pink);
   padding: 1.5rem;
@@ -40,9 +38,7 @@
   border-color: #5c2442;
 }
 
-/* =========================================
-   BOTONES MULTI-SELECCIÓN (SÍNTOMAS)
-   ========================================= */
+
 .pagina-salud-reproductiva .sintomas-grid {
   display: flex;
   flex-wrap: wrap;
@@ -87,9 +83,7 @@
   transform: translateY(-2px);
 }
 
-/* =========================================
-   MODAL DE ANÁLISIS INFORMATIVO
-   ========================================= */
+
 .pagina-salud-reproductiva .modal-overlay {
   position: fixed;
   top: 0; left: 50%; transform: translateX(-50%);
@@ -149,9 +143,7 @@
   cursor: pointer;
   width: 100%;
 }
-/* =========================================
-   NUEVOS BOTONES DEL FORMULARIO
-   ========================================= */
+
 .pagina-salud-reproductiva .acciones-form {
   display: flex;
   gap: 1rem;
@@ -176,9 +168,7 @@
 
 .pagina-salud-reproductiva .cancel-form-btn:hover { background-color: #e0e0e0; }
 
-/* =========================================
-   VISTA DE CALENDARIO / HISTORIAL
-   ========================================= */
+
 .pagina-salud-reproductiva .calendario-view {
   display: flex;
   flex-direction: column;
@@ -256,9 +246,7 @@
   margin-bottom: 0.2rem;
 }
 
-/* =========================================
-   VISTA DE CALENDARIO INTERACTIVO
-   ========================================= */
+
 .pagina-salud-reproductiva .calendario-view {
   display: flex;
   flex-direction: column;
@@ -398,9 +386,7 @@
 .pagina-salud-reproductiva .flujo-badge { background-color: #fcf8fa; padding: 4px 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; color: #333; margin-left: 5px; }
 .pagina-salud-reproductiva .sintomas-lista-mini { list-style: none; padding-left: 0.5rem; margin-top: 0.5rem; color: #555; }
 .pagina-salud-reproductiva .sintomas-lista-mini li { margin-bottom: 0.3rem; }
-/* =========================================
-   AJUSTE: el modal se abre dentro de la pantalla del teléfono
-   ========================================= */
+
 .pagina-salud-reproductiva .modal-overlay {
   position: absolute;
   inset: 0;
@@ -411,7 +397,7 @@
   height: auto;
 }
 
-/* Base del modal de resultados (antes la tomaba del CSS global de Centros de Salud) */
+
 .pagina-salud-reproductiva .modal-content {
   background-color: #ffffff;
   max-width: 400px;

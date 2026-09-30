@@ -4,11 +4,9 @@ import jakarta.validation.constraints.*;
 
 import java.time.Instant;
 
-/** DTOs agrupados en un solo archivo para avanzar rápido en el hackathon. */
 public final class Dtos {
     private Dtos() {}
 
-    /** Lo que manda el teléfono por WebSocket cada pocos segundos. */
     public record UbicacionEntrante(
             @DecimalMin("-90") @DecimalMax("90") double lat,
             @DecimalMin("-180") @DecimalMax("180") double lng,
@@ -19,7 +17,7 @@ public final class Dtos {
             Long usuarioId, String nombre, double lat, double lng,
             Double precision, Instant actualizadoEn) {}
 
-    /** Aviso para quitar a alguien del mapa (apagó ubicación o revocó la amistad). */
+
     public record UbicacionOculta(Long usuarioId) {}
 
     public record RegistroRequest(
@@ -31,7 +29,7 @@ public final class Dtos {
 
     public record UsuarioResponse(Long id, String nombre, String correo, boolean compartiendoUbicacion) {}
 
-    /** Respuesta de registro e inicio de sesión: los datos de la usuaria + su token (JWT). */
+    
     public record SesionResponse(Long id, String nombre, String correo, boolean compartiendoUbicacion,
                                  String token) {}
 

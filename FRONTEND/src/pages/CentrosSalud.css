@@ -1,6 +1,4 @@
-/* =========================================
-   TARJETAS DE DOCTORES
-   ========================================= */
+
 .pagina-salud .doctor-card {
   background-color: var(--pale-pink);
   padding: 1.2rem;
@@ -68,9 +66,7 @@
   transform: translateY(-2px);
 }
 
-/* =========================================
-   MODAL / VENTANA EMERGENTE (CITA)
-   ========================================= */
+
 .pagina-salud .modal-overlay {
   position: fixed;
   top: 0;
@@ -119,9 +115,7 @@
   color: #444; 
 }
 
-/* =========================================
-   FORMULARIO DENTRO DEL MODAL
-   ========================================= */
+
 .pagina-salud .fertility-form { 
   display: flex; 
   flex-direction: column; 
@@ -152,9 +146,7 @@
   border-color: var(--plum-dark);
 }
 
-/* =========================================
-   BOTONES DEL MODAL
-   ========================================= */
+
 .pagina-salud .modal-actions { 
   display: flex; 
   gap: 1rem; 
@@ -183,15 +175,13 @@
   color: #ffffff; 
 }
 
-/* Ajuste para el nuevo icono de imagen */
+
 .pagina-salud .custom-icon-img {
   width: 55px;
   height: 55px;
   object-fit: contain;
 }
-/* =========================================
-   AJUSTE: el modal se abre dentro de la pantalla del teléfono
-   ========================================= */
+
 .pagina-salud .modal-overlay {
   position: absolute;
   inset: 0;
