@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import useAhora, { haceCuanto } from '../hooks/useAhora.js';
 
 // Si todavía no hay ninguna ubicación, el mapa se centra en la Ciudad de México
 const CENTRO_POR_DEFECTO = [19.4326, -99.1332];
@@ -42,6 +43,7 @@ function AjustarVista({ miPosicion, amigas, dije, alerta }) {
 }
 
 export default function Mapa({ amigas, miPosicion, dije, alerta }) {
+  const ahora = useAhora();
   // Si la amiga en alerta no comparte su ubicación, se marca donde estaba al enviar la alerta
   const alertaSinAmiga = alerta?.lat != null && !amigas.some((a) => a.usuarioId === alerta.usuarioId);
 
@@ -86,7 +88,9 @@ export default function Mapa({ amigas, miPosicion, dije, alerta }) {
             radius={enAlerta ? 11 : 8}
             pathOptions={{ color: '#58213e', fillColor: enAlerta ? '#d32f2f' : '#c8a3b5', fillOpacity: 1 }}
           >
-            <Tooltip permanent direction="top" offset={[0, -8]}>{a.nombre}</Tooltip>
+            <Tooltip permanent direction="top" offset={[0, -8]}>
+              {a.nombre} · {haceCuanto(a.actualizadoEn, ahora)}
+            </Tooltip>
           </CircleMarker>
         );
       })}
@@ -97,7 +101,9 @@ export default function Mapa({ amigas, miPosicion, dije, alerta }) {
           radius={11}
           pathOptions={{ color: '#58213e', fillColor: '#d32f2f', fillOpacity: 1 }}
         >
-          <Tooltip permanent direction="top" offset={[0, -8]}>{alerta.nombre}</Tooltip>
+          <Tooltip permanent direction="top" offset={[0, -8]}>
+            {alerta.nombre} · {haceCuanto(alerta.enviadaEn, ahora)}
+          </Tooltip>
         </CircleMarker>
       )}
     </MapContainer>

@@ -3,12 +3,14 @@ import {
   solicitarAmistad, obtenerPendientes, aceptarAmistad, eliminarAmistad,
   obtenerAmigas, marcarFavorita, mensajeDeError,
 } from '../api/cliente.js';
+import useAhora, { haceCuanto } from '../hooks/useAhora.js';
 
 // Máximo de amigas que se pueden elegir como contacto de emergencia (igual que en el backend)
 const MAX_FAVORITAS = 2;
 
 // Vista de lista de amigos (Imagen 2)
 export default function Amigos({ amigas: enElMapa, onVolver }) {
+  const ahora = useAhora();
   const [correo, setCorreo] = useState('');
   const [pendientes, setPendientes] = useState([]);
   const [amigas, setAmigas] = useState([]);
@@ -73,7 +75,7 @@ export default function Amigos({ amigas: enElMapa, onVolver }) {
   const amigasOrdenadas = [...amigas].sort(
     (a, b) => b.favorita - a.favorita || a.otroNombre.localeCompare(b.otroNombre),
   );
-  const idsEnElMapa = new Set(enElMapa.map((u) => u.usuarioId));
+  const enElMapaPorId = new Map(enElMapa.map((u) => [u.usuarioId, u]));
 
   return (
     <div className="friends-panel">
@@ -115,7 +117,11 @@ export default function Amigos({ amigas: enElMapa, onVolver }) {
         <div key={a.id} className={`friend-item ${a.favorita ? 'favorita' : ''}`}>
           <div className="friend-info">
             <span className="friend-name">{a.otroNombre}</span>
-            {idsEnElMapa.has(a.otroUsuarioId) && <span className="friend-tag">En el mapa</span>}
+            {enElMapaPorId.has(a.otroUsuarioId) && (
+              <span className="friend-tag">
+                En el mapa · {haceCuanto(enElMapaPorId.get(a.otroUsuarioId).actualizadoEn, ahora)}
+              </span>
+            )}
           </div>
           <button
             className={`friend-fav ${a.favorita ? 'activa' : ''}`}
