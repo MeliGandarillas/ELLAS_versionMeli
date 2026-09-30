@@ -11,14 +11,16 @@ const REENVIO_MS = 10000;
 /**
  * Ubicaciones de las amigas (carga inicial + actualizaciones en vivo)
  * y, si `compartiendo` está activo, envía la ubicación propia del dispositivo.
+ * `onAlerta` recibe las alertas de las amigas que te tienen como contacto de emergencia.
  */
-export default function useUbicaciones(usuario, compartiendo) {
+export default function useUbicaciones(usuario, compartiendo, onAlerta) {
   const [amigas, setAmigas] = useState({}); // { [usuarioId]: UbicacionAmiga }
   const [miPosicion, setMiPosicion] = useState(null); // { lat, lng }
   const [errorGps, setErrorGps] = useState(null);
   const socketRef = useRef(null);
   const ultimaRef = useRef(null); // última ubicación propia { lat, lng, precision }
   const compartiendoRef = useRef(compartiendo);
+  const alertaRef = useRef(onAlerta);
   const usuarioId = usuario?.id;
   const token = usuario?.token;
 
@@ -30,6 +32,10 @@ export default function useUbicaciones(usuario, compartiendo) {
   useEffect(() => {
     compartiendoRef.current = compartiendo;
   }, [compartiendo]);
+
+  useEffect(() => {
+    alertaRef.current = onAlerta;
+  }, [onAlerta]);
 
   // Carga inicial + WebSocket
   useEffect(() => {
@@ -50,6 +56,7 @@ export default function useUbicaciones(usuario, compartiendo) {
           const { [id]: _, ...resto } = prev;
           return resto;
         }),
+      onAlerta: (a) => alertaRef.current?.(a),
       // En cuanto conecta (o reconecta) manda la ubicación que ya se tenía
       onConectado: enviarUltima,
     });

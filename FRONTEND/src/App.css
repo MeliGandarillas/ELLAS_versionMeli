@@ -119,6 +119,38 @@ body {
   letter-spacing: 1px;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Ícono de usuario: abre el menú de la cuenta */
+.header-user {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--pink-accent);
+  color: var(--purple-dark);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.header-user:hover,
+.header-user:focus-visible {
+  transform: scale(1.1);
+}
+
+.header-user svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Contenedor de Tarjetas Superiores */
 .cards-container {
   background-color: var(--purple-main);
@@ -235,6 +267,26 @@ body {
 .heart-btn:focus-visible + .heart-tooltip {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Burbuja con el correo de contacto (esquina inferior izquierda, debajo del corazón) */
+.correo-burbuja {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  padding: 5px 10px;
+  background-color: var(--pink-light);
+  color: var(--purple-dark);
+  border-radius: 14px 14px 14px 3px;
+  font-size: 12px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.correo-burbuja:hover,
+.correo-burbuja:focus-visible {
+  transform: scale(1.05);
 }
 
 /* Vista Amigos */

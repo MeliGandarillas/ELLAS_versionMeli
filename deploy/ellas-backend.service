@@ -1,0 +1,30 @@
+# Servicio de systemd: mantiene el backend de ELLAS encendido y lo reinicia si se cae
+# o si se reinicia la máquina.
+#
+# En el servidor deben existir:
+#   /opt/ellas/ellas.jar   (el archivo de BACKEND/ELLAS/target/ELLAS-0.0.1-SNAPSHOT.jar)
+#   /opt/ellas/.env        (DB_PASSWORD, JWT_SECRETO, CORS_ORIGENES... ver BACKEND/ELLAS/.env.example)
+#
+# Instalar:
+#   sudo cp ellas-backend.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now ellas-backend
+# Ver si está corriendo / ver sus mensajes:
+#   sudo systemctl status ellas-backend
+#   sudo journalctl -u ellas-backend -f
+
+[Unit]
+Description=Backend de ELLAS (Spring Boot)
+After=network.target postgresql.service
+
+[Service]
+# El backend lee el archivo .env de esta carpeta
+WorkingDirectory=/opt/ellas
+ExecStart=/usr/bin/java -Xmx384m -XX:+UseSerialGC -jar /opt/ellas/ellas.jar
+Restart=always
+RestartSec=5
+# Usuario sin permisos de administrador (créalo con: sudo useradd -r -s /usr/sbin/nologin ellas)
+User=ellas
+
+[Install]
+WantedBy=multi-user.target

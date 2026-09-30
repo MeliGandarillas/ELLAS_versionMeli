@@ -191,7 +191,7 @@ function CentrosApoyo({ onVolver }) {
                   {conUbicacion.length > 0 && (
                     <div className="map-container">
                       <MapContainer center={[19.40, -99.17]} zoom={10} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
-                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
                         {conUbicacion.map(lugar => (
                           <Marker key={lugar.id} position={[lugar.lat, lugar.lng]}>
                             <Popup>

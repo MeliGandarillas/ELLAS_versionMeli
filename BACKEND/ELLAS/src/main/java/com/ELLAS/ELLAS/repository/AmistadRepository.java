@@ -27,6 +27,25 @@ public interface AmistadRepository extends JpaRepository<Amistad, Long> {
     }
 
     @Query("""
+           SELECT a.receptor FROM Amistad a
+           WHERE a.estado = :estado AND a.solicitante.id = :id AND a.favoritaDeSolicitante = true
+           """)
+    List<Usuario> findReceptoresFavoritos(@Param("id") Long usuarioId, @Param("estado") EstadoAmistad estado);
+
+    @Query("""
+           SELECT a.solicitante FROM Amistad a
+           WHERE a.estado = :estado AND a.receptor.id = :id AND a.favoritaDeReceptor = true
+           """)
+    List<Usuario> findSolicitantesFavoritos(@Param("id") Long usuarioId, @Param("estado") EstadoAmistad estado);
+
+    /** Contactos de emergencia: las amigas que ESTE usuario marcó como favoritas. */
+    default List<Usuario> findFavoritas(Long usuarioId) {
+        List<Usuario> favoritas = new ArrayList<>(findReceptoresFavoritos(usuarioId, EstadoAmistad.ACEPTADA));
+        favoritas.addAll(findSolicitantesFavoritos(usuarioId, EstadoAmistad.ACEPTADA));
+        return favoritas;
+    }
+
+    @Query("""
            SELECT a FROM Amistad a
            WHERE (a.solicitante.id = :a AND a.receptor.id = :b)
               OR (a.solicitante.id = :b AND a.receptor.id = :a)

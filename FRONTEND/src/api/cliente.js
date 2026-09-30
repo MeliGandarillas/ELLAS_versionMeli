@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { leerUsuario } from './sesion.js';
+import { API_URL } from './config.js';
 
-// Las rutas /api pasan por el proxy de Vite hacia el backend (ver vite.config.js)
-const api = axios.create({ baseURL: '/api' });
+// La dirección del backend se configura en config.js (VITE_API_URL en producción)
+const api = axios.create({ baseURL: API_URL });
 
 // Cada petición lleva el token de sesión (JWT); el backend sabe quién es la usuaria por él
 api.interceptors.request.use((config) => {
@@ -65,3 +66,7 @@ export const marcarFavorita = (id, favorita) =>
 
 export const obtenerUbicacionesDeAmigas = () =>
   api.get('/amistades/ubicaciones').then((r) => r.data);
+
+// Alertas del dije: avisa a los contactos de emergencia. `ubicacion` es { lat, lng } o null.
+export const enviarAlerta = (ubicacion) =>
+  api.post('/alertas', ubicacion ?? {}).then((r) => r.data);

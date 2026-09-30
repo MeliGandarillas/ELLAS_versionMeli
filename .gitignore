@@ -180,3 +180,6 @@ HELP.md
 *.iml
 .DS_Store
 Thumbs.db
+
+# La URL pública del backend para compilar la APK (no tiene secretos): sí se sube
+!FRONTEND/.env.apk

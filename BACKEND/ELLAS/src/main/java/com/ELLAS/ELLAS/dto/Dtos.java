@@ -40,4 +40,15 @@ public final class Dtos {
     public record FavoritaRequest(boolean favorita) {}
 
     public record CompartirRequest(boolean activo) {}
+
+    /** Alerta del dije. La ubicación es opcional: si no llega, se usa la última que se guardó. */
+    public record AlertaRequest(
+            @DecimalMin("-90") @DecimalMax("90") Double lat,
+            @DecimalMin("-180") @DecimalMax("180") Double lng) {}
+
+    /** Lo que recibe cada contacto de emergencia cuando una amiga presiona el botón de su dije. */
+    public record AlertaAmiga(Long usuarioId, String nombre, Double lat, Double lng, Instant enviadaEn) {}
+
+    /** A cuántos contactos de emergencia se les envió la alerta. */
+    public record AlertaResponse(int enviadas) {}
 }
