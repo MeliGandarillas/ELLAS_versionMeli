@@ -49,6 +49,10 @@ public final class Dtos {
     /** Lo que recibe cada contacto de emergencia cuando una amiga presiona el botón de su dije. */
     public record AlertaAmiga(Long usuarioId, String nombre, Double lat, Double lng, Instant enviadaEn) {}
 
-    /** A cuántos contactos de emergencia se les envió la alerta. */
-    public record AlertaResponse(int enviadas) {}
+    /** A cuántos contactos de emergencia se les envió la alerta, y el id con el que se registró (para ligarle evidencias). */
+    public record AlertaResponse(int enviadas, Long alertaId) {}
+
+    /** Metadatos de una evidencia de audio (el audio se pide aparte, descifrado solo para su dueña). */
+    public record EvidenciaResponse(java.util.UUID id, Long alertaId, Instant creadaEn, Integer duracionSeg,
+                                    long tamanoBytes, String sha256) {}
 }

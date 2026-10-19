@@ -2,8 +2,10 @@ package com.ELLAS.ELLAS.controller;
 
 import com.ELLAS.ELLAS.config.UsuarioActual;
 import com.ELLAS.ELLAS.dto.Dtos.*;
+import com.ELLAS.ELLAS.model.Alerta;
 import com.ELLAS.ELLAS.model.Ubicacion;
 import com.ELLAS.ELLAS.model.Usuario;
+import com.ELLAS.ELLAS.repository.AlertaRepository;
 import com.ELLAS.ELLAS.repository.AmistadRepository;
 import com.ELLAS.ELLAS.repository.UbicacionRepository;
 import com.ELLAS.ELLAS.repository.UsuarioRepository;
@@ -28,15 +30,17 @@ public class AlertaController {
     private final UsuarioRepository usuarioRepo;
     private final AmistadRepository amistadRepo;
     private final UbicacionRepository ubicacionRepo;
+    private final AlertaRepository alertaRepo;
     private final SimpMessagingTemplate broker;
 
     /**
      * Botón del dije: avisa SOLO a los contactos de emergencia (amigas favoritas).
      * La alerta lleva la ubicación aunque la usuaria tenga apagado "compartir ubicación":
      * presionar el botón es pedir ayuda.
+     * Devuelve también el id de la alerta registrada, al que la app liga el audio grabado por el dije.
      */
     @PostMapping
-    @Transactional(readOnly = true)
+    @Transactional
     public AlertaResponse enviar(@UsuarioActual Long yo, @Valid @RequestBody AlertaRequest req) {
         Usuario usuario = usuarioRepo.findById(yo)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -48,11 +52,14 @@ public class AlertaController {
             lng = ultima == null ? null : ultima.getLng();
         }
 
+        // Se registra la alerta para poder ligarle después las evidencias de audio del dije
+        Alerta alerta = alertaRepo.save(Alerta.builder().usuarioId(yo).lat(lat).lng(lng).creadaEn(Instant.now()).build());
+
         AlertaAmiga msg = new AlertaAmiga(yo, usuario.getNombre(), lat, lng, Instant.now());
         List<Usuario> favoritas = amistadRepo.findFavoritas(yo);
         for (Usuario favorita : favoritas) {
             broker.convertAndSendToUser(favorita.getId().toString(), COLA_ALERTAS, msg);
         }
-        return new AlertaResponse(favoritas.size());
+        return new AlertaResponse(favoritas.size(), alerta.getId());
     }
 }
