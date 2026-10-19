@@ -70,3 +70,22 @@ export const obtenerUbicacionesDeAmigas = () =>
 // Alertas del dije: avisa a los contactos de emergencia. `ubicacion` es { lat, lng } o null.
 export const enviarAlerta = (ubicacion) =>
   api.post('/alertas', ubicacion ?? {}).then((r) => r.data);
+
+// Evidencias de audio del dije (solo su dueña las ve; el servidor las guarda cifradas)
+/** Sube el WAV de una alerta. `clave` hace el reintento idempotente (no duplica si la primera sí llegó). */
+export const subirEvidencia = ({ wav, alertaId, duracionSeg, clave }) => {
+  const datos = new FormData();
+  datos.append('archivo', new Blob([wav], { type: 'audio/wav' }), 'evidencia.wav');
+  datos.append('alertaId', String(alertaId));
+  if (duracionSeg != null) datos.append('duracionSeg', String(duracionSeg));
+  if (clave) datos.append('clave', clave);
+  return api.post('/evidencias', datos, { timeout: 120000 }).then((r) => r.data);
+};
+
+export const obtenerEvidencias = () => api.get('/evidencias').then((r) => r.data);
+
+/** Audio descifrado de una evidencia, como Blob (para reproducirlo o descargarlo). */
+export const obtenerAudioEvidencia = (id) =>
+  api.get(`/evidencias/${id}/audio`, { responseType: 'blob', timeout: 120000 }).then((r) => r.data);
+
+export const eliminarEvidencia = (id) => api.delete(`/evidencias/${id}`);

@@ -6,6 +6,8 @@ import Registro from './pages/Registro.jsx';
 import SaludReproductiva from './pages/SaludReproductiva.jsx';
 import CentrosApoyo from './pages/CentrosApoyo.jsx';
 import CentrosSalud from './pages/CentrosSalud.jsx';
+import Dije from './pages/Dije.jsx';
+import Evidencias from './pages/Evidencias.jsx';
 import useUbicaciones from './hooks/useUbicaciones.js';
 import useDije from './hooks/useDije.js';
 import { leerUsuario, guardarUsuario, borrarUsuario } from './api/sesion.js';
@@ -18,7 +20,7 @@ export default function App() {
   // Usuaria actual (se guarda en el navegador)
   const [usuario, setUsuario] = useState(leerUsuario);
   // Estado para alternar entre vistas
-  const [currentView, setCurrentView] = useState('main'); // 'main' | 'friends' | 'calendar' | 'support' | 'health'
+  const [currentView, setCurrentView] = useState('main'); // 'main' | 'friends' | 'calendar' | 'support' | 'health' | 'dije' | 'evidencias'
   // Estado para controlar la visibilidad del modal (3ra imagen)
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Si este dispositivo está enviando su ubicación.
@@ -36,7 +38,7 @@ export default function App() {
     const temporizador = setTimeout(() => setAlerta(null), DURACION_ALERTA_MS);
     return () => clearTimeout(temporizador);
   }, [alerta]);
-  const dije = useDije(setAviso);
+  const dije = useDije(setAviso, usuario?.id ?? null);
 
   // Una amiga presionó el botón de su dije: se avisa y se muestra dónde está en el mapa
   const recibirAlerta = (a) => {
@@ -57,7 +59,6 @@ export default function App() {
   };
 
   const salir = () => {
-    dije.desconectar();
     borrarUsuario();
     setUsuario(null);
     setCompartiendo(false);
@@ -67,19 +68,19 @@ export default function App() {
     setCurrentView('main');
   };
 
-  // Busca un dije cercano por Bluetooth: si lo encuentra, el dije vibra y aparece en el mapa.
-  // Si no, se abre el menú, que muestra el motivo y deja volver a intentarlo.
-  const activarDije = async () => {
-    const conectado = await dije.conectar();
-    setIsModalOpen(!conectado);
-    if (conectado) setAviso('Accesorio funcionando');
-  };
-
-  // Corazón: si el dije ya está conectado lo hace vibrar; si no, lo busca y lo conecta
-  const alPresionarCorazon = () => {
+  // Corazón: con el dije conectado lo hace vibrar; si ya está emparejado lo reconecta;
+  // si no hay ninguno, abre la pantalla para buscarlo y emparejarlo
+  const alPresionarCorazon = async () => {
     if (dije.conectando) return;
-    if (dije.conectado) dije.vibrar();
-    else activarDije();
+    if (dije.conectado) {
+      dije.vibrar();
+    } else if (dije.recordado) {
+      const conectado = await dije.conectar();
+      if (conectado) setAviso('Accesorio funcionando');
+      else setCurrentView('dije');
+    } else {
+      setCurrentView('dije');
+    }
   };
 
   // Si el token de sesión vence o deja de ser válido, se vuelve a la pantalla de inicio de sesión
@@ -154,6 +155,18 @@ export default function App() {
         <CentrosSalud onVolver={volverAInicio} />
       )}
 
+      {currentView === 'dije' && (
+        <Dije
+          dije={dije}
+          onVolver={volverAInicio}
+          onVerEvidencias={() => setCurrentView('evidencias')}
+        />
+      )}
+
+      {currentView === 'evidencias' && (
+        <Evidencias onVolver={() => setCurrentView('dije')} />
+      )}
+
       {isModalOpen && (
         <div className="app-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="app-modal" onClick={(e) => e.stopPropagation()}>
@@ -180,17 +193,34 @@ export default function App() {
                   (compartiendo ? 'Tus amigas pueden verte en el mapa' : 'Tu ubicación está oculta')}
               </p>
 
-              {/* Dije (Bluetooth) */}
+              {/* Dije (Bluetooth) y evidencias de audio */}
               <button
                 className={`primary-btn ${dije.conectado ? 'activo' : ''}`}
-                onClick={dije.conectado ? dije.desconectar : activarDije}
-                disabled={dije.conectando}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setCurrentView('dije');
+                }}
               >
-                {dije.conectando ? 'Buscando dije…' : dije.conectado ? 'Desconectar dije' : 'Conectar dije'}
+                Mi dije
               </button>
               <p className="modal-estado">
-                {dije.error || (dije.conectado ? 'Tu dije está conectado' : 'Tu dije está desconectado')}
+                {dije.recordado
+                  ? dije.conectado
+                    ? `Tu dije está conectado${dije.bateria ? ` · batería ${dije.bateria.porcentaje}%` : ''}`
+                    : dije.reconectando || dije.conectando
+                      ? 'Buscando tu dije…'
+                      : 'Tu dije está desconectado'
+                  : 'Todavía no has emparejado tu dije'}
               </p>
+              <button
+                className="primary-btn"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setCurrentView('evidencias');
+                }}
+              >
+                Mis evidencias
+              </button>
               <button className="link-btn" onClick={salir}>Cerrar sesión</button>
             </div>
           </div>

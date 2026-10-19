@@ -1,113 +1,87 @@
-import { useEffect, useRef, useState } from 'react';
-import { BLUETOOTH_APAGADO, conectarDije, HAY_BLUETOOTH } from '../api/dije.js';
-import { enviarAlerta, mensajeDeError } from '../api/cliente.js';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { servicioDije, HAY_BLUETOOTH, alAvisar, recordarPosicion } from '../ble/instancia.js';
+import { VIBRACION } from '../ble/protocolo.js';
 
 /**
- * Conexión por Bluetooth con el dije.
- * - Al conectarse, el dije vibra y se empieza a seguir su ubicación (la del teléfono:
- *   el dije no tiene GPS, pero está a unos metros mientras dure la conexión).
- * - Cuando se presiona el botón del dije, avisa a los contactos de emergencia
- *   y el dije vibra para confirmar que la alerta sí se envió.
- * `onAviso(texto)` muestra un mensaje a la usuaria.
+ * Conexión con el dije (Bluetooth). Toda la lógica está en ble/servicioDije.js; aquí solo se conecta a React.
+ * - Con sesión iniciada recuerda el dije emparejado y se reconecta solo.
+ * - Al presionar el botón del dije: avisa a los contactos de emergencia con la ubicación del teléfono,
+ *   el dije vibra para confirmar y su audio se descarga y se sube (ver Mis evidencias).
+ * `onAviso(texto)` muestra un mensaje a la usuaria. `usuarioId` es la usuaria con sesión (o null).
  */
-export default function useDije(onAviso) {
-  const [conectado, setConectado] = useState(false);
-  const [conectando, setConectando] = useState(false);
-  const [posicion, setPosicion] = useState(null); // { lat, lng }
-  const [error, setError] = useState(null);
-  const dijeRef = useRef(null);
-  const posicionRef = useRef(null);
+export default function useDije(onAviso, usuarioId) {
+  const estado = useSyncExternalStore(servicioDije.suscribir, servicioDije.obtenerEstado);
+  const [posicion, setPosicion] = useState(null); // { lat, lng } del teléfono mientras el dije está conectado
   const avisoRef = useRef(onAviso);
 
   useEffect(() => {
     avisoRef.current = onAviso;
   }, [onAviso]);
 
-  const alRecibir = async (texto) => {
-    if (texto.trim() !== 'ALERTA') return;
-    try {
-      const { enviadas } = await enviarAlerta(posicionRef.current);
-      if (enviadas === 0) {
-        avisoRef.current('No tienes contactos de emergencia. Márcalos con la ★ en tu lista de amigos');
-        return;
-      }
-      avisoRef.current('Alerta enviada a tus contactos de emergencia');
-    } catch (err) {
-      avisoRef.current(`No se pudo enviar la alerta: ${mensajeDeError(err)}`);
-      return;
-    }
-    dijeRef.current?.enviar('OK').catch(() => {});
-  };
+  useEffect(() => {
+    alAvisar((texto) => avisoRef.current?.(texto));
+    return () => alAvisar(null);
+  }, []);
 
-  const desconectar = () => {
-    const dije = dijeRef.current;
-    dijeRef.current = null;
-    setConectado(false);
-    dije?.desconectar().catch(() => {});
-  };
+  // Con sesión: reconexión automática y subida de audios pendientes. Sin sesión: se suelta el dije.
+  useEffect(() => {
+    if (!usuarioId) return;
+    servicioDije.activar();
+    return () => {
+      servicioDije.desactivar();
+    };
+  }, [usuarioId]);
 
-  /** Busca un dije cercano, lo conecta y lo hace vibrar. Devuelve true si quedó conectado. */
-  const conectar = async () => {
-    if (!HAY_BLUETOOTH) {
-      setError('Este dispositivo no permite conectar el dije por Bluetooth');
-      return false;
-    }
-    setConectando(true);
-    setError(null);
-    let dije = null;
-    try {
-      dije = await conectarDije({
-        onMensaje: alRecibir,
-        onDesconectado: () => {
-          dijeRef.current = null;
-          setConectado(false);
-        },
-      });
-      await dije.enviar('VIBRAR');
-      dijeRef.current = dije;
-      setConectado(true);
-      return true;
-    } catch (err) {
-      dije?.desconectar().catch(() => {});
-      setError(
-        err?.message === BLUETOOTH_APAGADO
-          ? 'Enciende el Bluetooth para conectar tu dije'
-          : 'No se encontró tu dije. Acércalo, revisa que el Bluetooth esté encendido e inténtalo de nuevo',
-      );
-      return false;
-    } finally {
-      setConectando(false);
-    }
-  };
+  // Al volver a la app se reintenta ya, sin esperar al siguiente intento programado
+  useEffect(() => {
+    const alVolver = () => {
+      if (document.visibilityState === 'visible') servicioDije.reintentarYa();
+    };
+    document.addEventListener('visibilitychange', alVolver);
+    window.addEventListener('online', alVolver);
+    return () => {
+      document.removeEventListener('visibilitychange', alVolver);
+      window.removeEventListener('online', alVolver);
+    };
+  }, []);
 
-  /** Hace vibrar el dije (para encontrarlo o comprobar que funciona). */
-  const vibrar = () =>
-    dijeRef.current?.enviar('VIBRAR').catch(() => avisoRef.current('No se pudo hacer vibrar el dije'));
+  const conectado = estado.fase === 'conectado';
 
-  // Ubicación del dije mientras está conectado
+  // Ubicación del teléfono mientras el dije está conectado (el dije no tiene GPS: está a unos metros)
   useEffect(() => {
     if (!conectado || !('geolocation' in navigator)) return;
-
     const watchId = navigator.geolocation.watchPosition(
       ({ coords }) => {
-        posicionRef.current = { lat: coords.latitude, lng: coords.longitude };
-        setPosicion(posicionRef.current);
+        const p = { lat: coords.latitude, lng: coords.longitude };
+        recordarPosicion(p);
+        setPosicion(p);
       },
       () => {},
       { enableHighAccuracy: true, maximumAge: 10000 },
     );
-
     return () => {
       navigator.geolocation.clearWatch(watchId);
-      posicionRef.current = null;
       setPosicion(null);
     };
   }, [conectado]);
 
-  // Al cerrar la app se suelta el dije
-  useEffect(() => () => {
-    dijeRef.current?.desconectar().catch(() => {});
-  }, []);
-
-  return { conectado, conectando, posicion, error, conectar, desconectar, vibrar };
+  return {
+    ...estado,
+    hayBluetooth: HAY_BLUETOOTH,
+    conectado,
+    conectando: estado.fase === 'conectando',
+    reconectando: estado.fase === 'reconectando',
+    recordado: Boolean(estado.dispositivo),
+    posicion,
+    buscar: servicioDije.buscar,
+    detenerBusqueda: servicioDije.detenerBusqueda,
+    emparejar: servicioDije.emparejar,
+    conectar: servicioDije.conectar,
+    desconectar: servicioDije.desconectar,
+    olvidar: servicioDije.olvidar,
+    vibrar: () => servicioDije.vibrar(VIBRACION.ENCONTRAR),
+    configurarGrabacion: servicioDije.configurarGrabacion,
+    cambiarModo: servicioDije.cambiarModo,
+    simularAlerta: servicioDije.simularAlerta,
+  };
 }

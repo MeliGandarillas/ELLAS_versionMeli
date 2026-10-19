@@ -8,12 +8,15 @@
     "build": "vite build",
     "build:apk": "vite build --mode apk && cap sync android",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node --test --test-force-exit scripts/*.mjs"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^8.3.0",
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
     "@stomp/stompjs": "^7.3.0",
     "axios": "^1.20.0",
     "leaflet": "^1.9.4",
