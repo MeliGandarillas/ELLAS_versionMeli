@@ -7,6 +7,7 @@ import com.ELLAS.ELLAS.model.EstadoAmistad;
 import com.ELLAS.ELLAS.model.Usuario;
 import com.ELLAS.ELLAS.repository.AmistadRepository;
 import com.ELLAS.ELLAS.repository.UsuarioRepository;
+import com.ELLAS.ELLAS.service.LimitadorDeIntentos;
 import com.ELLAS.ELLAS.service.UbicacionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.util.List;
 
 
@@ -29,6 +31,7 @@ public class AmistadController {
     private final AmistadRepository amistadRepo;
     private final UsuarioRepository usuarioRepo;
     private final UbicacionService ubicacionService;
+    private final LimitadorDeIntentos limitador;
 
     /** Envía solicitud por correo. La ubicación NO se comparte hasta que la otra persona acepte. */
     @PostMapping("/solicitar")
@@ -36,6 +39,8 @@ public class AmistadController {
     @Transactional
     public AmistadResponse solicitar(@UsuarioActual Long yo,
                                      @Valid @RequestBody SolicitudAmistadRequest req) {
+        // Frena el barrido de correos para descubrir quién tiene cuenta
+        limitador.intentar("solicitud:" + yo, 20, Duration.ofHours(1));
         Usuario solicitante = buscar(yo);
         Usuario receptor = usuarioRepo.findByCorreo(req.correo().trim().toLowerCase())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe ese usuario"));
