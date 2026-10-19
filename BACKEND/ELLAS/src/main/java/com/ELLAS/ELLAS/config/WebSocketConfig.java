@@ -1,5 +1,8 @@
 package com.ELLAS.ELLAS.config;
 
+import com.ELLAS.ELLAS.controller.AlertaController;
+import com.ELLAS.ELLAS.service.LimitadorDeIntentos;
+import com.ELLAS.ELLAS.service.UbicacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -17,14 +20,26 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.socket.config.annotation.*;
 
+import org.springframework.web.server.ResponseStatusException;
+
 import java.security.Principal;
+import java.time.Duration;
+import java.util.Set;
 
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    /** Únicas colas a las que una usuaria puede suscribirse: todas privadas (/user/...). */
+    private static final Set<String> COLAS_PERMITIDAS = Set.of(
+            "/user" + UbicacionService.COLA_UBICACIONES,
+            "/user" + UbicacionService.COLA_OCULTAR,
+            "/user" + AlertaController.COLA_ALERTAS);
+    private static final String DESTINO_UBICACION = "/app/ubicacion";
+
     private final JwtDecoder jwtDecoder;
+    private final LimitadorDeIntentos limitador;
 
     @Value("${app.cors.origenes}")
     private String[] origenes;
@@ -41,6 +56,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws").setAllowedOriginPatterns(origenes);
     }
 
+    @Override
+    public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
+        // Una ubicación pesa unos 100 bytes: nadie necesita mensajes de 64 KB
+        registration.setMessageSizeLimit(4 * 1024).setSendBufferSizeLimit(256 * 1024);
+    }
+
     /**
      * La usuaria se identifica con su JWT en el mensaje CONNECT de STOMP
      * (header Authorization: Bearer ...). Sin un token válido no se acepta la conexión.
@@ -52,8 +73,34 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor =
                         MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+                if (accessor == null) return message;
+                StompCommand comando = accessor.getCommand();
+                if (StompCommand.CONNECT.equals(comando)) {
                     accessor.setUser(autenticar(accessor.getFirstNativeHeader("Authorization")));
+                    return message;
+                }
+                if (comando == null || StompCommand.DISCONNECT.equals(comando)
+                        || StompCommand.UNSUBSCRIBE.equals(comando)) {
+                    return message;
+                }
+                // Cualquier otro frame exige una conexión ya autenticada
+                if (accessor.getUser() == null) {
+                    throw new MessageDeliveryException("No autenticada");
+                }
+                if (StompCommand.SUBSCRIBE.equals(comando)
+                        && !COLAS_PERMITIDAS.contains(accessor.getDestination())) {
+                    throw new MessageDeliveryException("Destino no permitido");
+                }
+                if (StompCommand.SEND.equals(comando)) {
+                    if (!DESTINO_UBICACION.equals(accessor.getDestination())) {
+                        throw new MessageDeliveryException("Destino no permitido");
+                    }
+                    // Exceso de mensajes: se descartan sin cortar la conexión
+                    try {
+                        limitador.intentar("ws-ubicacion:" + accessor.getUser().getName(), 120, Duration.ofMinutes(1));
+                    } catch (ResponseStatusException e) {
+                        return null;
+                    }
                 }
                 return message;
             }
