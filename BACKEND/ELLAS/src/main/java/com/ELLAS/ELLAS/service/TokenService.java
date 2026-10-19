@@ -18,6 +18,8 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class TokenService {
 
+    public static final String EMISOR = "ellas";
+
     private final JwtEncoder encoder;
 
     @Value("${app.jwt.dias:30}")
@@ -26,7 +28,7 @@ public class TokenService {
     public String crearToken(Usuario usuario) {
         Instant ahora = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("ellas")
+                .issuer(EMISOR)
                 .subject(usuario.getId().toString()) // quién es: el id de la usuaria
                 .claim("nombre", usuario.getNombre())
                 .issuedAt(ahora)
