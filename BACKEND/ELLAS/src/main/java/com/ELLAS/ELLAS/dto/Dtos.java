@@ -10,7 +10,7 @@ public final class Dtos {
     public record UbicacionEntrante(
             @DecimalMin("-90") @DecimalMax("90") double lat,
             @DecimalMin("-180") @DecimalMax("180") double lng,
-            Double precision) {}
+            @DecimalMin("0") @DecimalMax("100000") Double precision) {}
 
     /** Lo que recibe cada amiga en su mapa. */
     public record UbicacionAmiga(
@@ -21,11 +21,13 @@ public final class Dtos {
     public record UbicacionOculta(Long usuarioId) {}
 
     public record RegistroRequest(
-            @NotBlank String nombre,
-            @Email @NotBlank String correo,
-            @NotBlank @Size(min = 8) String password) {}
+            @NotBlank @Size(max = 50) String nombre,
+            @Email @NotBlank @Size(max = 254) String correo,
+            // 72 es el máximo que BCrypt procesa; más largo solo gasta CPU
+            @NotBlank @Size(min = 8, max = 72) String password) {}
 
-    public record LoginRequest(@NotBlank String nombre, @NotBlank String password) {}
+    public record LoginRequest(@NotBlank @Size(max = 50) String nombre,
+                               @NotBlank @Size(max = 72) String password) {}
 
     public record UsuarioResponse(Long id, String nombre, String correo, boolean compartiendoUbicacion) {}
 
@@ -33,7 +35,7 @@ public final class Dtos {
     public record SesionResponse(Long id, String nombre, String correo, boolean compartiendoUbicacion,
                                  String token) {}
 
-    public record SolicitudAmistadRequest(@Email @NotBlank String correo) {}
+    public record SolicitudAmistadRequest(@Email @NotBlank @Size(max = 254) String correo) {}
 
     public record AmistadResponse(Long id, Long otroUsuarioId, String otroNombre, String estado, boolean favorita) {}
 
